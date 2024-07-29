@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Robot Master</string>
+    <string name="button_bottom">Back</string>
+    <string name="simulation_robot">Simulation Robot</string>
+</resources>
