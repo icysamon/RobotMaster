@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.util.Log
@@ -16,6 +15,9 @@ import androidx.core.content.ContextCompat
 
 
 class Bluetooth(private val appCompatActivity: AppCompatActivity) {
+
+
+    private var bluetoothAdapter: BluetoothAdapter? = null
 
     private val startForResult = appCompatActivity.registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -43,12 +45,12 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         }
 
 
-    // Bluetooth
+    // Init
     fun init() {
         // bluetooth init
         val bluetoothManager: BluetoothManager = appCompatActivity.getSystemService (
             BluetoothManager::class.java)
-        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager.adapter
+        bluetoothAdapter = bluetoothManager.adapter
 
 
         // check bluetoothAdapter
@@ -67,8 +69,8 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         }
 
         Log.i("bluetooth class", "init")
-    }
 
+    }
 
 
     fun requestBluetoothPermission() {
@@ -97,6 +99,47 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
                 )
             }
         }
+    }
+
+    private fun requestBluetoothScanPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                appCompatActivity,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                init()
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                appCompatActivity,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) -> {
+                Toast.makeText(appCompatActivity, "BLUETOOTH_SCAN 権限は必要にゃ。", Toast.LENGTH_LONG).show()
+                requestPermissionLauncher.launch(
+                    Manifest.permission.BLUETOOTH_SCAN
+                )
+            }
+
+            else -> {
+                Toast.makeText(appCompatActivity, "BLUETOOTH_SCAN 権限は必要にゃ。", Toast.LENGTH_LONG).show()
+                requestPermissionLauncher.launch(
+                    Manifest.permission.BLUETOOTH_SCAN
+                )
+            }
+        }
+    }
+
+    fun scanDevice() {
+        if (ActivityCompat.checkSelfPermission(
+                appCompatActivity,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestBluetoothScanPermission()
+            return
+        }
+        bluetoothAdapter?.startDiscovery()
+
     }
 
 }

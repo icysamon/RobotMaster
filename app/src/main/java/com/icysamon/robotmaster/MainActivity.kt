@@ -10,6 +10,8 @@ import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity() {
 
+    private val ble = Bluetooth(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -20,7 +22,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val ble = Bluetooth(this)
         ble.init()
         ble.requestBluetoothPermission()
     }
@@ -31,5 +32,10 @@ class MainActivity : AppCompatActivity() {
         val robot = findViewById<ImageView>(R.id.simulation_robot)
         robot.translationX += 50F
         println(view)
+    }
+
+    fun onButtonFindDeviceClick(view: View) {
+        ble.scanDevice()
+
     }
 }
