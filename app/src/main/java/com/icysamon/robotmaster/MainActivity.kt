@@ -1,5 +1,7 @@
 package com.icysamon.robotmaster
 
+import android.bluetooth.BluetoothDevice
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -23,7 +25,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         ble.init()
-        ble.requestBluetoothPermission()
+        ble.requestBluetoothConnectPermission()
+        ble.requestBluetoothScanPermission()
+        ble.checkBondedDevices()
     }
 
 

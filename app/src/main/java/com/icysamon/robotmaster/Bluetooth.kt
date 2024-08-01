@@ -3,8 +3,12 @@ package com.icysamon.robotmaster
 import android.Manifest
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.util.Log
 import android.widget.Toast
@@ -30,7 +34,7 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
     }
 
 
-    // 権限ランチャー
+    // 権限リクエストランチャー
     private val requestPermissionLauncher =
         appCompatActivity.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -45,7 +49,36 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         }
 
 
-    // Init
+    // Create a BroadcastReceiver for ACTION_FOUND
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Toast.makeText(appCompatActivity, "onReceive", Toast.LENGTH_SHORT).show()
+            val action: String? = intent.action
+            when(action) {
+                BluetoothDevice.ACTION_FOUND -> {
+                    if (ActivityCompat.checkSelfPermission(
+                            appCompatActivity,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        ) != PackageManager.PERMISSION_GRANTED) {
+                        requestBluetoothConnectPermission()
+                    } else {
+                        val device: BluetoothDevice? =
+                            intent.getParcelableExtra(
+                                BluetoothDevice.EXTRA_DEVICE,
+                                BluetoothDevice::class.java
+                            )
+                        val deviceName = device?.name
+                        val deviceHardwareAddress = device?.address // Mac address
+                        Toast.makeText(appCompatActivity, deviceName.toString(), Toast.LENGTH_SHORT).show()
+                        Toast.makeText(appCompatActivity, deviceHardwareAddress.toString(), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+
+    // Bluetooth の初期化
     fun init() {
         // bluetooth init
         val bluetoothManager: BluetoothManager = appCompatActivity.getSystemService (
@@ -68,12 +101,17 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
             startForResult.launch(intent)
         }
 
+
+        // Register for broadcasts when a device is discovered.
+        val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        appCompatActivity.registerReceiver(receiver, filter)
         Log.i("bluetooth class", "init")
 
     }
 
 
-    fun requestBluetoothPermission() {
+    // BLUETOOTH_CONNECT 権限を要求する
+    fun requestBluetoothConnectPermission() {
         when {
             ContextCompat.checkSelfPermission(
                 appCompatActivity,
@@ -101,7 +139,8 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         }
     }
 
-    private fun requestBluetoothScanPermission() {
+    // BLUETOOTH_SCAN 権限を要求する
+    fun requestBluetoothScanPermission() {
         when {
             ContextCompat.checkSelfPermission(
                 appCompatActivity,
@@ -128,6 +167,7 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
             }
         }
     }
+
 
     fun scanDevice() {
         if (ActivityCompat.checkSelfPermission(
@@ -137,9 +177,36 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         ) {
             requestBluetoothScanPermission()
             return
+        } else {
+            bluetoothAdapter?.startDiscovery()
+            Toast.makeText(appCompatActivity, "startDiscovery()", Toast.LENGTH_SHORT).show()
         }
-        bluetoothAdapter?.startDiscovery()
-
     }
 
+
+
+
+
+    fun onDestroy() {
+        appCompatActivity.unregisterReceiver(receiver)
+    }
+
+    fun checkBondedDevices() {
+        //Toast.makeText(appCompatActivity, "check bonded", Toast.LENGTH_LONG).show()
+        if (ActivityCompat.checkSelfPermission(
+                appCompatActivity,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED) {
+            requestBluetoothConnectPermission()
+        } else {
+            var deviceName: String = "null"
+            var deviceHardwareAddress: String = "null"
+            val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
+            pairedDevices?.forEach { device ->
+                deviceName = device.name
+                deviceHardwareAddress = device.address // MAC address
+            }
+            Toast.makeText(appCompatActivity, "bonded: $deviceName", Toast.LENGTH_LONG).show()
+        }
+    }
 }
