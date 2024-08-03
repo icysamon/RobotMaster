@@ -191,7 +191,7 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
         appCompatActivity.unregisterReceiver(receiver)
     }
 
-    fun checkBondedDevices() {
+    fun checkBondedDevices(): List<String> {
         //Toast.makeText(appCompatActivity, "check bonded", Toast.LENGTH_LONG).show()
         if (ActivityCompat.checkSelfPermission(
                 appCompatActivity,
@@ -199,8 +199,8 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
             ) != PackageManager.PERMISSION_GRANTED) {
             requestBluetoothConnectPermission()
         } else {
-            var deviceName = mutableListOf<String>()
-            var deviceHardwareAddress = mutableListOf<String>()
+            val deviceName = mutableListOf<String>()
+            val deviceHardwareAddress = mutableListOf<String>()
             val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
             pairedDevices?.forEach { device ->
                 deviceName.add(device.name)
@@ -211,7 +211,8 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
                     Toast.makeText(appCompatActivity, "bonded: ${device.name}", Toast.LENGTH_LONG).show()
                 }
             }
-
+            return deviceName
         }
+        return mutableListOf<String>()
     }
 }

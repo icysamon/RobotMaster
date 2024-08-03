@@ -4,7 +4,10 @@ import android.bluetooth.BluetoothDevice
 import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.ImageView
+import android.widget.ListAdapter
+import android.widget.ListView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -27,7 +30,17 @@ class MainActivity : AppCompatActivity() {
         ble.init()
         ble.requestBluetoothConnectPermission()
         ble.requestBluetoothScanPermission()
-        ble.checkBondedDevices()
+
+        val bondedDevice: List<String> = ble.checkBondedDevices()
+        val listView = findViewById<ListView>(R.id.bonded_device_list)
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, bondedDevice)
+        listView.adapter = adapter
+
+
+
+
+
+
     }
 
 
@@ -40,6 +53,7 @@ class MainActivity : AppCompatActivity() {
 
     fun onButtonFindDeviceClick(view: View) {
         ble.scanDevice()
+
 
     }
 }
