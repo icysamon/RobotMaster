@@ -199,14 +199,19 @@ class Bluetooth(private val appCompatActivity: AppCompatActivity) {
             ) != PackageManager.PERMISSION_GRANTED) {
             requestBluetoothConnectPermission()
         } else {
-            var deviceName: String = "null"
-            var deviceHardwareAddress: String = "null"
+            var deviceName = mutableListOf<String>()
+            var deviceHardwareAddress = mutableListOf<String>()
             val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
             pairedDevices?.forEach { device ->
-                deviceName = device.name
-                deviceHardwareAddress = device.address // MAC address
+                deviceName.add(device.name)
+                deviceHardwareAddress.add(device.address) // MAC address
             }
-            Toast.makeText(appCompatActivity, "bonded: $deviceName", Toast.LENGTH_LONG).show()
+            if (pairedDevices != null) {
+                for (device in pairedDevices) {
+                    Toast.makeText(appCompatActivity, "bonded: ${device.name}", Toast.LENGTH_LONG).show()
+                }
+            }
+
         }
     }
 }
